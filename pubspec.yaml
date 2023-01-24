@@ -66,6 +66,9 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/elgiganten-logo.jpeg
+    - assets/tree.jpeg
+    - assets/tree.avif
+    - assets/treee.jpeg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -91,7 +94,29 @@ flutter:
 
     - family: Elgiganten3
       fonts:
-        - asset: fonts/ElkjopBodytext-Regular.ttf 
+        - asset: fonts/ElkjopBodytext-Regular.ttf
+
+    - family: Elgiganten4
+      fonts:
+        - asset: fonts/ElkjopHeadline-Bold.otf
+
+    - family: Elgiganten5
+      fonts:
+        - asset: fonts/ElkjopHeadline-Bold.ttf
+
+    - family: Elgiganten6
+      fonts:
+        - asset: fonts/ElkjopSans-Bold.ttf
+
+    - family: Elgiganten7
+      fonts:
+        - asset: fonts/ElkjopHeadline-Medium.ttf
+
+    - family: Elgiganten8
+      fonts:
+        - asset: fonts/ElkjopHeadline-Regular.ttf
+
+
   #   - family: Schyler
   #     fonts:
   #       - asset: fonts/Schyler-Regular.ttf
