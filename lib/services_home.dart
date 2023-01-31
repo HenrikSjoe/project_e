@@ -11,8 +11,10 @@ Future<void> signOut() async {
   }
 }
 
-CollectionReference _collectionRef =
-    FirebaseFirestore.instance.collection('categories');
+CollectionReference _collectionRef = FirebaseFirestore.instance
+    .collection('categories')
+    .doc('tnD84mdEdVvBvQ3bOY1f')
+    .collection('questions');
 
 Future<void> getData() async {
   // Get docs from collection reference
@@ -24,7 +26,7 @@ Future<void> getData() async {
   print(allData);
 }
 
-class FinancingPage extends StatelessWidget {
+class ServicesHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

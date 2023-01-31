@@ -99,7 +99,7 @@ class TreePage extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 // Action for gesture detector
-                Navigator.pushNamed(context, '/quiz');
+                Navigator.pushNamed(context, '/servicesHome');
                 print('tapped Tjänster hemma');
               },
               child: Container(
@@ -127,7 +127,7 @@ class TreePage extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 // Action for gesture detector
-                Navigator.pushNamed(context, '/quiz');
+                Navigator.pushNamed(context, '/servicesStore');
                 print('tapped Tjänster i butik');
               },
               child: Container(
@@ -155,7 +155,7 @@ class TreePage extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 // Action for gesture detector
-                Navigator.pushNamed(context, '/quiz');
+                Navigator.pushNamed(context, '/accessories');
                 print('tapped Tillbehör');
               },
               child: Container(

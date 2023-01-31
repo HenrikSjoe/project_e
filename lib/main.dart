@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:project_e/financing.dart';
 import 'package:project_e/quiz.dart';
 import 'firebase_options.dart';
-import 'tree.dart';
-import 'quiz.dart';
-import 'securities.dart';
-import 'financing.dart';
 
-import 'package:flutter/material.dart';
+import 'package:project_e/accessories.dart';
+import 'package:project_e/financing.dart';
+import 'package:project_e/services_home.dart';
+import 'package:project_e/services_store.dart';
+import 'tree.dart';
+import 'securities.dart';
 import 'login_page.dart';
 
 import 'package:flutter/material.dart';
@@ -31,9 +31,11 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => LoginPage(),
         '/home': (context) => TreePage(),
-        '/quiz': (context) => QuizPage(),
-        '/financing': (context) => FinancingPage(),
+        '/financing': (context) => Quiz(),
         '/securities': (context) => SecuritiesPage(),
+        '/servicesHome': (context) => ServicesHomePage(),
+        '/servicesStore': (context) => ServicesStorePage(),
+        '/accessories': (context) => AccessoriesPage()
       },
     );
   }

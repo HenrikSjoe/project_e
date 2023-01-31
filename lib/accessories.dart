@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 Future<void> signOut() async {
   try {
@@ -11,20 +9,7 @@ Future<void> signOut() async {
   }
 }
 
-CollectionReference _collectionRef =
-    FirebaseFirestore.instance.collection('categories');
-
-Future<void> getData() async {
-  // Get docs from collection reference
-  QuerySnapshot querySnapshot = await _collectionRef.get();
-
-  // Get data from docs and convert map to List
-  final allData = querySnapshot.docs.map((doc) => doc.data()).toList();
-
-  print(allData);
-}
-
-class FinancingPage extends StatelessWidget {
+class AccessoriesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,7 +50,6 @@ class FinancingPage extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            getData();
             Navigator.pop(context);
             print("bakåtpilen");
           },
@@ -74,7 +58,7 @@ class FinancingPage extends StatelessWidget {
       ),
       body: const Center(
         child: Text(
-          "Här kommer frågor om tjänster hemma",
+          "Här kommer frågor om tillbehör",
           style: TextStyle(
               fontSize: 40, fontFamily: 'Elgiganten3', color: Colors.black),
         ),
