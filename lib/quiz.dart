@@ -27,6 +27,7 @@ class _QuizState extends State<Quiz> {
   List<Map<String, dynamic>> allData = [];
   bool _isLoading = true;
   String _userAnswer = "";
+  TextEditingController _textController = TextEditingController();
 
   @override
   void initState() {
@@ -35,7 +36,7 @@ class _QuizState extends State<Quiz> {
   }
 
   Future<void> getData() async {
-    // Get docs from collection reference
+    // Get docs from collection reference_userAnswer
     QuerySnapshot querySnapshot = await _collectionRef.get();
 
     // Get data from docs and convert map to List
@@ -67,6 +68,8 @@ class _QuizState extends State<Quiz> {
       _questionIndex++;
       _userAnswer = "";
     });
+    // clear the textfield
+    _textController.clear();
   }
 
   @override
@@ -221,6 +224,7 @@ class _QuizState extends State<Quiz> {
                 ? Column(
                     children: [
                       TextField(
+                        controller: _textController,
                         onChanged: (value) {
                           setState(() {
                             _userAnswer = value;
@@ -240,6 +244,7 @@ class _QuizState extends State<Quiz> {
                     child: Column(
                       children: [
                         TextField(
+                          controller: _textController,
                           onChanged: (value) {
                             setState(() {
                               _userAnswer = value;
