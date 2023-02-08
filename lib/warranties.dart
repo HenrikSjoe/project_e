@@ -1,13 +1,13 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: use_key_in_widget_constructors, library_private_types_in_public_api, prefer_final_fields
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:core';
 
-class Quiz extends StatefulWidget {
+class Warranties extends StatefulWidget {
   @override
-  _QuizState createState() => _QuizState();
+  _WarrantiesState createState() => _WarrantiesState();
 }
 
 Future<void> signOut() async {
@@ -18,10 +18,10 @@ Future<void> signOut() async {
   }
 }
 
-class _QuizState extends State<Quiz> {
+class _WarrantiesState extends State<Warranties> {
   CollectionReference _collectionRef = FirebaseFirestore.instance
       .collection('categories')
-      .doc('tnD84mdEdVvBvQ3bOY1f')
+      .doc('pgBWLs48XNyKhjRbb92K')
       .collection('questions');
 
   int _questionIndex = 0;
@@ -30,7 +30,6 @@ class _QuizState extends State<Quiz> {
   bool _isLoading = true;
   String _userAnswer = "";
   TextEditingController _textController = TextEditingController();
-  Color _answerColor = Colors.grey;
 
   @override
   void initState() {
@@ -56,9 +55,6 @@ class _QuizState extends State<Quiz> {
       if (allData[_questionIndex]['correctAnswer'].compareTo(_userAnswer) ==
           0) {
         _correctAnswers++;
-        _answerColor = Colors.green;
-      } else {
-        _answerColor = Colors.red;
       }
     } else {
       if (_userAnswer.isNotEmpty) {
@@ -67,20 +63,15 @@ class _QuizState extends State<Quiz> {
                 .compareTo(_userAnswer.toLowerCase().trim()) ==
             0) {
           _correctAnswers++;
-          _answerColor = Colors.green;
-        } else {
-          _answerColor = Colors.red;
         }
       }
     }
-    _textController.clear();
-    Future.delayed(const Duration(milliseconds: 500), () {
-      setState(() {
-        _questionIndex++;
-        _userAnswer = "";
-        _answerColor = Colors.grey;
-      });
+    setState(() {
+      _questionIndex++;
+      _userAnswer = "";
     });
+    // clear the textfield
+    _textController.clear();
   }
 
   @override
@@ -124,6 +115,7 @@ class _QuizState extends State<Quiz> {
                 onTap: () {
                   // Action for gesture detector
                   Navigator.pushNamed(context, '/home');
+                  print("hemma");
                 },
                 child: Container(
                   width: 50,
@@ -183,13 +175,10 @@ class _QuizState extends State<Quiz> {
       body: Column(
         children: [
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
-              child: Center(
-                child: Text(
-                  allData[_questionIndex]['question'],
-                  style: TextStyle(fontSize: 25),
-                ),
+            child: Center(
+              child: Text(
+                allData[_questionIndex]['question'],
+                style: TextStyle(fontSize: 25),
               ),
             ),
           ),
@@ -197,10 +186,28 @@ class _QuizState extends State<Quiz> {
             child: allData[_questionIndex]['multiAnswer'] == true
                 ? ListView.builder(
                     itemCount: allData[_questionIndex]['answers'].length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                        child: ElevatedButton(
+                    itemBuilder: (context, index) {
+                      return ElevatedButton(
+                        child: Text(allData[_questionIndex]['answers'][index]),
+                        onPressed: () {
+                          setState(() {
+                            _userAnswer = allData[_questionIndex]['answers']
+                                    [index]
+                                .toString();
+                            _checkAnswer();
+                          });
+                        },
+                      );
+                    },
+                  )
+                : Visibility(
+                    visible: false,
+                    child: ListView.builder(
+                      itemCount: allData[_questionIndex]['answers'].length,
+                      itemBuilder: (context, index) {
+                        return ElevatedButton(
+                          child:
+                              Text(allData[_questionIndex]['answers'][index]),
                           onPressed: () {
                             setState(() {
                               _userAnswer = allData[_questionIndex]['answers']
@@ -209,52 +216,8 @@ class _QuizState extends State<Quiz> {
                               _checkAnswer();
                             });
                           },
-                          style: _userAnswer ==
-                                      allData[_questionIndex]['answers'][index]
-                                          .toString() &&
-                                  _questionIndex < allData.length &&
-                                  allData[_questionIndex]['correctAnswer']
-                                          .compareTo(_userAnswer) ==
-                                      0
-                              ? ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                )
-                              : _userAnswer ==
-                                          allData[_questionIndex]['answers']
-                                                  [index]
-                                              .toString() &&
-                                      _questionIndex < allData.length
-                                  ? ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red,
-                                    )
-                                  : null,
-                          child:
-                              Text(allData[_questionIndex]['answers'][index]),
-                        ),
-                      );
-                    },
-                  )
-                : Visibility(
-                    visible: false,
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: _textController,
-                          onChanged: (value) {
-                            setState(() {
-                              _userAnswer = value;
-                            });
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text('Submit'),
-                          onPressed: () {
-                            setState(() {
-                              _checkAnswer();
-                            });
-                          },
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
           ),
@@ -262,16 +225,13 @@ class _QuizState extends State<Quiz> {
             child: allData[_questionIndex]['multiAnswer'] == false
                 ? Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(18.0),
-                        child: TextField(
-                          controller: _textController,
-                          onChanged: (value) {
-                            setState(() {
-                              _userAnswer = value;
-                            });
-                          },
-                        ),
+                      TextField(
+                        controller: _textController,
+                        onChanged: (value) {
+                          setState(() {
+                            _userAnswer = value;
+                          });
+                        },
                       ),
                       ElevatedButton(
                         child: Text('Submit'),
@@ -303,6 +263,13 @@ class _QuizState extends State<Quiz> {
                     ),
                   ),
           ),
+          // Container(
+          //   padding: EdgeInsets.all(8.0),
+          //   child: ElevatedButton(
+          //     child: Text('Submit'),
+          //     onPressed: _checkAnswer,
+          //   ),
+          // )
         ],
       ),
       bottomNavigationBar: Container(
@@ -314,6 +281,7 @@ class _QuizState extends State<Quiz> {
               onTap: () {
                 // Action for gesture detector
                 Navigator.pushNamed(context, '/home');
+                print("hemma 2");
               },
               child: Container(
                 width: 50,
@@ -338,7 +306,7 @@ class _QuizState extends State<Quiz> {
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(25),
                 ),
-                child: Icon(Icons.bar_chart_rounded),
+                child: Icon(Icons.settings),
               ),
             ),
             GestureDetector(

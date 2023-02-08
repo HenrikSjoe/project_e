@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+
 import 'package:project_e/quiz.dart';
+import 'package:project_e/warranties.dart';
 import 'firebase_options.dart';
 
 import 'package:project_e/accessories.dart';
@@ -33,9 +35,10 @@ class MyApp extends StatelessWidget {
         '/home': (context) => TreePage(),
         '/financing': (context) => Quiz(),
         '/securities': (context) => SecuritiesPage(),
-        '/servicesHome': (context) => ServicesHomePage(),
-        '/servicesStore': (context) => ServicesStorePage(),
-        '/accessories': (context) => AccessoriesPage()
+        '/servicesHome': (context) => ServicesHome(),
+        '/servicesStore': (context) => ServicesStore(),
+        '/accessories': (context) => AccessoriesPage(),
+        '/warranties': (context) => Warranties(),
       },
     );
   }

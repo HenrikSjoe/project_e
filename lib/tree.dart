@@ -71,7 +71,7 @@ class TreePage extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 // Action for gesture detector
-                Navigator.pushNamed(context, '/securities');
+                Navigator.pushNamed(context, '/warranties');
                 print('tapped Trygghet & förlängda garantier');
               },
               child: Container(
