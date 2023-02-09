@@ -30,7 +30,7 @@ class _QuizState extends State<Quiz> {
   bool _isLoading = true;
   String _userAnswer = "";
   TextEditingController _textController = TextEditingController();
-  Color _answerColor = Colors.grey;
+  Color _color = Colors.blue;
 
   @override
   void initState() {
@@ -56,9 +56,13 @@ class _QuizState extends State<Quiz> {
       if (allData[_questionIndex]['correctAnswer'].compareTo(_userAnswer) ==
           0) {
         _correctAnswers++;
-        _answerColor = Colors.green;
+        setState(() {
+          _color = Colors.green;
+        });
       } else {
-        _answerColor = Colors.red;
+        setState(() {
+          _color = Colors.red;
+        });
       }
     } else {
       if (_userAnswer.isNotEmpty) {
@@ -67,9 +71,13 @@ class _QuizState extends State<Quiz> {
                 .compareTo(_userAnswer.toLowerCase().trim()) ==
             0) {
           _correctAnswers++;
-          _answerColor = Colors.green;
+          setState(() {
+            _color = Colors.green;
+          });
         } else {
-          _answerColor = Colors.red;
+          setState(() {
+            _color = Colors.red;
+          });
         }
       }
     }
@@ -78,13 +86,17 @@ class _QuizState extends State<Quiz> {
       setState(() {
         _questionIndex++;
         _userAnswer = "";
-        _answerColor = Colors.grey;
+        setState(() {
+          _color = Colors.blue;
+        });
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // Color _color = Colors.blue;
+
     if (_isLoading) {
       return Scaffold(
         body: Center(
@@ -246,14 +258,14 @@ class _QuizState extends State<Quiz> {
                             });
                           },
                         ),
-                        ElevatedButton(
-                          child: Text('Submit'),
-                          onPressed: () {
-                            setState(() {
-                              _checkAnswer();
-                            });
-                          },
-                        ),
+                        // ElevatedButton(
+                        //   child: Text('skicka 1'),
+                        //   onPressed: () {
+                        //     setState(() {
+                        //       _checkAnswer();
+                        //     });
+                        //   },
+                        // ),
                       ],
                     ),
                   ),
@@ -274,8 +286,20 @@ class _QuizState extends State<Quiz> {
                         ),
                       ),
                       ElevatedButton(
-                        child: Text('Submit'),
+                        style:
+                            ElevatedButton.styleFrom(backgroundColor: _color),
+                        child: Text("Submit"),
                         onPressed: () {
+                          if (_userAnswer ==
+                              allData[_questionIndex]['correctAnswer']) {
+                            setState(() {
+                              _color = Colors.green;
+                            });
+                          } else {
+                            setState(() {
+                              _color = Colors.red;
+                            });
+                          }
                           _checkAnswer();
                         },
                       ),
@@ -290,13 +314,13 @@ class _QuizState extends State<Quiz> {
                           onChanged: (value) {
                             setState(() {
                               _userAnswer = value;
+                              if (_userAnswer ==
+                                  allData[_questionIndex]['correctAnswer']) {
+                                _color = Colors.green;
+                              } else {
+                                _color = Colors.red;
+                              }
                             });
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text('Submit'),
-                          onPressed: () {
-                            _checkAnswer();
                           },
                         ),
                       ],
