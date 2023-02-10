@@ -1,4 +1,4 @@
-// ignore_for_file: use_key_in_widget_constructors, library_private_types_in_public_api, prefer_final_fields
+// ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,6 +30,7 @@ class _WarrantiesState extends State<Warranties> {
   bool _isLoading = true;
   String _userAnswer = "";
   TextEditingController _textController = TextEditingController();
+  Color _color = Colors.blue;
 
   @override
   void initState() {
@@ -55,6 +56,13 @@ class _WarrantiesState extends State<Warranties> {
       if (allData[_questionIndex]['correctAnswer'].compareTo(_userAnswer) ==
           0) {
         _correctAnswers++;
+        setState(() {
+          _color = Colors.green;
+        });
+      } else {
+        setState(() {
+          _color = Colors.red;
+        });
       }
     } else {
       if (_userAnswer.isNotEmpty) {
@@ -63,19 +71,32 @@ class _WarrantiesState extends State<Warranties> {
                 .compareTo(_userAnswer.toLowerCase().trim()) ==
             0) {
           _correctAnswers++;
+          setState(() {
+            _color = Colors.green;
+          });
+        } else {
+          setState(() {
+            _color = Colors.red;
+          });
         }
       }
     }
-    setState(() {
-      _questionIndex++;
-      _userAnswer = "";
-    });
-    // clear the textfield
     _textController.clear();
+    Future.delayed(const Duration(milliseconds: 500), () {
+      setState(() {
+        _questionIndex++;
+        _userAnswer = "";
+        setState(() {
+          _color = Colors.blue;
+        });
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    // Color _color = Colors.blue;
+
     if (_isLoading) {
       return Scaffold(
         body: Center(
@@ -106,7 +127,7 @@ class _WarrantiesState extends State<Warranties> {
             ),
           ],
         ),
-        bottomNavigationBar: Container(
+        bottomNavigationBar: SizedBox(
           height: 60,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -115,7 +136,6 @@ class _WarrantiesState extends State<Warranties> {
                 onTap: () {
                   // Action for gesture detector
                   Navigator.pushNamed(context, '/home');
-                  print("hemma");
                 },
                 child: Container(
                   width: 50,
@@ -175,10 +195,13 @@ class _WarrantiesState extends State<Warranties> {
       body: Column(
         children: [
           Expanded(
-            child: Center(
-              child: Text(
-                allData[_questionIndex]['question'],
-                style: TextStyle(fontSize: 25),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
+              child: Center(
+                child: Text(
+                  allData[_questionIndex]['question'],
+                  style: TextStyle(fontSize: 25),
+                ),
               ),
             ),
           ),
@@ -186,28 +209,10 @@ class _WarrantiesState extends State<Warranties> {
             child: allData[_questionIndex]['multiAnswer'] == true
                 ? ListView.builder(
                     itemCount: allData[_questionIndex]['answers'].length,
-                    itemBuilder: (context, index) {
-                      return ElevatedButton(
-                        child: Text(allData[_questionIndex]['answers'][index]),
-                        onPressed: () {
-                          setState(() {
-                            _userAnswer = allData[_questionIndex]['answers']
-                                    [index]
-                                .toString();
-                            _checkAnswer();
-                          });
-                        },
-                      );
-                    },
-                  )
-                : Visibility(
-                    visible: false,
-                    child: ListView.builder(
-                      itemCount: allData[_questionIndex]['answers'].length,
-                      itemBuilder: (context, index) {
-                        return ElevatedButton(
-                          child:
-                              Text(allData[_questionIndex]['answers'][index]),
+                    itemBuilder: (BuildContext context, int index) {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        child: ElevatedButton(
                           onPressed: () {
                             setState(() {
                               _userAnswer = allData[_questionIndex]['answers']
@@ -216,8 +221,44 @@ class _WarrantiesState extends State<Warranties> {
                               _checkAnswer();
                             });
                           },
-                        );
-                      },
+                          style: _userAnswer ==
+                                      allData[_questionIndex]['answers'][index]
+                                          .toString() &&
+                                  _questionIndex < allData.length &&
+                                  allData[_questionIndex]['correctAnswer']
+                                          .compareTo(_userAnswer) ==
+                                      0
+                              ? ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                )
+                              : _userAnswer ==
+                                          allData[_questionIndex]['answers']
+                                                  [index]
+                                              .toString() &&
+                                      _questionIndex < allData.length
+                                  ? ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                    )
+                                  : null,
+                          child:
+                              Text(allData[_questionIndex]['answers'][index]),
+                        ),
+                      );
+                    },
+                  )
+                : Visibility(
+                    visible: false,
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _textController,
+                          onChanged: (value) {
+                            setState(() {
+                              _userAnswer = value;
+                            });
+                          },
+                        ),
+                      ],
                     ),
                   ),
           ),
@@ -225,17 +266,32 @@ class _WarrantiesState extends State<Warranties> {
             child: allData[_questionIndex]['multiAnswer'] == false
                 ? Column(
                     children: [
-                      TextField(
-                        controller: _textController,
-                        onChanged: (value) {
-                          setState(() {
-                            _userAnswer = value;
-                          });
-                        },
+                      Padding(
+                        padding: const EdgeInsets.all(18.0),
+                        child: TextField(
+                          controller: _textController,
+                          onChanged: (value) {
+                            setState(() {
+                              _userAnswer = value;
+                            });
+                          },
+                        ),
                       ),
                       ElevatedButton(
-                        child: Text('Submit'),
+                        style:
+                            ElevatedButton.styleFrom(backgroundColor: _color),
+                        child: Text("Submit"),
                         onPressed: () {
+                          if (_userAnswer ==
+                              allData[_questionIndex]['correctAnswer']) {
+                            setState(() {
+                              _color = Colors.green;
+                            });
+                          } else {
+                            setState(() {
+                              _color = Colors.red;
+                            });
+                          }
                           _checkAnswer();
                         },
                       ),
@@ -250,26 +306,19 @@ class _WarrantiesState extends State<Warranties> {
                           onChanged: (value) {
                             setState(() {
                               _userAnswer = value;
+                              if (_userAnswer ==
+                                  allData[_questionIndex]['correctAnswer']) {
+                                _color = Colors.green;
+                              } else {
+                                _color = Colors.red;
+                              }
                             });
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text('Submit'),
-                          onPressed: () {
-                            _checkAnswer();
                           },
                         ),
                       ],
                     ),
                   ),
           ),
-          // Container(
-          //   padding: EdgeInsets.all(8.0),
-          //   child: ElevatedButton(
-          //     child: Text('Submit'),
-          //     onPressed: _checkAnswer,
-          //   ),
-          // )
         ],
       ),
       bottomNavigationBar: Container(
@@ -281,7 +330,6 @@ class _WarrantiesState extends State<Warranties> {
               onTap: () {
                 // Action for gesture detector
                 Navigator.pushNamed(context, '/home');
-                print("hemma 2");
               },
               child: Container(
                 width: 50,
@@ -295,8 +343,6 @@ class _WarrantiesState extends State<Warranties> {
             ),
             GestureDetector(
               onTap: () {
-                Navigator.popAndPushNamed(context, '/home');
-
                 // Action for gesture detector
               },
               child: Container(
@@ -306,7 +352,7 @@ class _WarrantiesState extends State<Warranties> {
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(25),
                 ),
-                child: Icon(Icons.settings),
+                child: Icon(Icons.bar_chart_rounded),
               ),
             ),
             GestureDetector(

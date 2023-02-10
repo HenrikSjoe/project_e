@@ -10,7 +10,6 @@ import 'package:project_e/financing.dart';
 import 'package:project_e/services_home.dart';
 import 'package:project_e/services_store.dart';
 import 'tree.dart';
-import 'securities.dart';
 import 'login_page.dart';
 
 import 'package:flutter/material.dart';
@@ -38,8 +37,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => LoginPage(),
         '/home': (context) => TreePage(),
-        '/financing': (context) => Quiz(),
-        '/securities': (context) => SecuritiesPage(),
+        '/financing': (context) => Financing(),
         '/servicesHome': (context) => ServicesHome(),
         '/servicesStore': (context) => ServicesStore(),
         '/accessories': (context) => AccessoriesPage(),

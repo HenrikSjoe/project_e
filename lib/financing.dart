@@ -1,7 +1,14 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:core';
+
+class Financing extends StatefulWidget {
+  @override
+  _FinancingState createState() => _FinancingState();
+}
 
 Future<void> signOut() async {
   try {
@@ -11,22 +18,171 @@ Future<void> signOut() async {
   }
 }
 
-CollectionReference _collectionRef =
-    FirebaseFirestore.instance.collection('categories');
+class _FinancingState extends State<Financing> {
+  CollectionReference _collectionRef = FirebaseFirestore.instance
+      .collection('categories')
+      .doc('tnD84mdEdVvBvQ3bOY1f')
+      .collection('questions');
 
-Future<void> getData() async {
-  // Get docs from collection reference
-  QuerySnapshot querySnapshot = await _collectionRef.get();
+  int _questionIndex = 0;
+  int _correctAnswers = 0;
+  List<Map<String, dynamic>> allData = [];
+  bool _isLoading = true;
+  String _userAnswer = "";
+  TextEditingController _textController = TextEditingController();
+  Color _color = Colors.blue;
 
-  // Get data from docs and convert map to List
-  final allData = querySnapshot.docs.map((doc) => doc.data()).toList();
+  @override
+  void initState() {
+    super.initState();
+    getData();
+  }
 
-  print(allData);
-}
+  Future<void> getData() async {
+    // Get docs from collection reference_userAnswer
+    QuerySnapshot querySnapshot = await _collectionRef.get();
 
-class FinancingPage extends StatelessWidget {
+    // Get data from docs and convert map to List
+    allData = querySnapshot.docs
+        .map((doc) => doc.data() as Map<String, dynamic>)
+        .toList();
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _checkAnswer() {
+    if (allData[_questionIndex]['multiAnswer'] == true) {
+      if (allData[_questionIndex]['correctAnswer'].compareTo(_userAnswer) ==
+          0) {
+        _correctAnswers++;
+        setState(() {
+          _color = Colors.green;
+        });
+      } else {
+        setState(() {
+          _color = Colors.red;
+        });
+      }
+    } else {
+      if (_userAnswer.isNotEmpty) {
+        if (allData[_questionIndex]['correctAnswer']
+                .toLowerCase()
+                .compareTo(_userAnswer.toLowerCase().trim()) ==
+            0) {
+          _correctAnswers++;
+          setState(() {
+            _color = Colors.green;
+          });
+        } else {
+          setState(() {
+            _color = Colors.red;
+          });
+        }
+      }
+    }
+    _textController.clear();
+    Future.delayed(const Duration(milliseconds: 500), () {
+      setState(() {
+        _questionIndex++;
+        _userAnswer = "";
+        setState(() {
+          _color = Colors.blue;
+        });
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Color _color = Colors.blue;
+
+    if (_isLoading) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_questionIndex >= allData.length) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          title: Image.asset(
+            'assets/elgiganten-logo.jpeg',
+            fit: BoxFit.contain,
+            height: 100.0,
+          ),
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: Text(
+                    "You had $_correctAnswers correct answers out of ${allData.length} questions",
+                    style:
+                        TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+        bottomNavigationBar: SizedBox(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              GestureDetector(
+                onTap: () {
+                  // Action for gesture detector
+                  Navigator.pushNamed(context, '/home');
+                },
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: const Icon(Icons.home),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  // Action for gesture detector
+                },
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: Icon(Icons.settings),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  // Action for gesture detector
+                  Navigator.popAndPushNamed(context, '/');
+                  signOut();
+                },
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: const Icon(Icons.logout),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -35,102 +191,194 @@ class FinancingPage extends StatelessWidget {
           fit: BoxFit.contain,
           height: 100.0,
         ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.exit_to_app, color: Colors.black),
-            onPressed: () {
-              showMenu(
-                context: context,
-                position: RelativeRect.fromLTRB(1, 0, 1, 0),
-                items: [
-                  PopupMenuItem(
-                    child: InkWell(
-                      onTap: () {
-                        signOut();
-                        Navigator.of(context).pushNamedAndRemoveUntil(
-                            '/', (Route<dynamic> route) => false);
-                      },
-                      child: ListTile(
-                        leading: Icon(Icons.exit_to_app),
-                        title: Text('Logout',
-                            style: TextStyle(color: Colors.black)),
-                      ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
+              child: Center(
+                child: Text(
+                  allData[_questionIndex]['question'],
+                  style: TextStyle(fontSize: 25, fontFamily: 'Elgiganten8'),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: allData[_questionIndex]['multiAnswer'] == true
+                ? ListView.builder(
+                    itemCount: allData[_questionIndex]['answers'].length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _userAnswer = allData[_questionIndex]['answers']
+                                      [index]
+                                  .toString();
+                              _checkAnswer();
+                            });
+                          },
+                          style: _userAnswer ==
+                                      allData[_questionIndex]['answers'][index]
+                                          .toString() &&
+                                  _questionIndex < allData.length &&
+                                  allData[_questionIndex]['correctAnswer']
+                                          .compareTo(_userAnswer) ==
+                                      0
+                              ? ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                )
+                              : _userAnswer ==
+                                          allData[_questionIndex]['answers']
+                                                  [index]
+                                              .toString() &&
+                                      _questionIndex < allData.length
+                                  ? ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                    )
+                                  : null,
+                          child: Text(
+                            allData[_questionIndex]['answers'][index],
+                            style: TextStyle(
+                                fontSize: 18, fontFamily: 'Elgiganten8'),
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                : Visibility(
+                    visible: false,
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _textController,
+                          onChanged: (value) {
+                            setState(() {
+                              _userAnswer = value;
+                            });
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              );
-            },
+          ),
+          Expanded(
+            child: allData[_questionIndex]['multiAnswer'] == false
+                ? Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(18.0),
+                        child: TextField(
+                          style: TextStyle(
+                              fontFamily: 'Elgiganten3', fontSize: 25),
+                          controller: _textController,
+                          onChanged: (value) {
+                            setState(() {
+                              _userAnswer = value;
+                            });
+                          },
+                        ),
+                      ),
+                      ElevatedButton(
+                        style:
+                            ElevatedButton.styleFrom(backgroundColor: _color),
+                        child: Text("Submit"),
+                        onPressed: () {
+                          if (_userAnswer ==
+                              allData[_questionIndex]['correctAnswer']) {
+                            setState(() {
+                              _color = Colors.green;
+                            });
+                          } else {
+                            setState(() {
+                              _color = Colors.red;
+                            });
+                          }
+                          _checkAnswer();
+                        },
+                      ),
+                    ],
+                  )
+                : Visibility(
+                    visible: false,
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _textController,
+                          onChanged: (value) {
+                            setState(() {
+                              _userAnswer = value;
+                              if (_userAnswer ==
+                                  allData[_questionIndex]['correctAnswer']) {
+                                _color = Colors.green;
+                              } else {
+                                _color = Colors.red;
+                              }
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
           ),
         ],
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            getData();
-            Navigator.pop(context);
-            print("bakåtpilen");
-          },
-          color: Colors.black87,
+      ),
+      bottomNavigationBar: Container(
+        height: 60,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            GestureDetector(
+              onTap: () {
+                // Action for gesture detector
+                Navigator.pushNamed(context, '/home');
+              },
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: const Icon(Icons.home),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                // Action for gesture detector
+              },
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: Icon(Icons.bar_chart_rounded),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                // Action for gesture detector
+                Navigator.popAndPushNamed(context, '/');
+                signOut();
+              },
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: const Icon(Icons.logout),
+              ),
+            ),
+          ],
         ),
       ),
-      body: const Center(
-        child: Text(
-          "Här kommer frågor om tjänster hemma",
-          style: TextStyle(
-              fontSize: 40, fontFamily: 'Elgiganten3', color: Colors.black),
-        ),
-      ),
-      // bottomNavigationBar: Container(
-      //   height: 60,
-      //   child: Row(
-      //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      //     children: <Widget>[
-      //       GestureDetector(
-      //         onTap: () {
-      //           // Action for gesture detector
-      //         },
-      //         child: Container(
-      //           width: 50,
-      //           height: 50,
-      //           decoration: BoxDecoration(
-      //             color: Colors.transparent,
-      //             borderRadius: BorderRadius.circular(25),
-      //           ),
-      //           child: const Icon(Icons.home),
-      //         ),
-      //       ),
-      //       GestureDetector(
-      //         onTap: () {
-      //           // Action for gesture detector
-      //         },
-      //         child: Container(
-      //           width: 50,
-      //           height: 50,
-      //           decoration: BoxDecoration(
-      //             color: Colors.transparent,
-      //             borderRadius: BorderRadius.circular(25),
-      //           ),
-      //           child: Icon(Icons.settings),
-      //         ),
-      //       ),
-      //       GestureDetector(
-      //         onTap: () {
-      //           // Action for gesture detector
-      //           Navigator.of(context).pushNamedAndRemoveUntil(
-      //               '/', (Route<dynamic> route) => false);
-      //         },
-      //         child: Container(
-      //           width: 50,
-      //           height: 50,
-      //           decoration: BoxDecoration(
-      //             color: Colors.transparent,
-      //             borderRadius: BorderRadius.circular(25),
-      //           ),
-      //           child: const Icon(Icons.logout),
-      //         ),
-      //       ),
-      //     ],
-      //   ),
-      // ),
     );
   }
 }
