@@ -1,15 +1,21 @@
 // ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:core';
-import 'package:string_similarity/string_similarity.dart';
-import 'package:dart_levenshtein/dart_levenshtein.dart';
-import 'dart:math';
 
 class Financing extends StatefulWidget {
   @override
   _FinancingState createState() => _FinancingState();
+}
+
+Future<void> signOut() async {
+  try {
+    await FirebaseAuth.instance.signOut();
+  } catch (e) {
+    print(e.toString());
+  }
 }
 
 class _FinancingState extends State<Financing> {
@@ -101,8 +107,26 @@ class _FinancingState extends State<Financing> {
 
   @override
   Widget build(BuildContext context) {
+    // Color _color = Colors.blue;
+
+    if (_isLoading) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     if (_questionIndex >= allData.length) {
       return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          title: Image.asset(
+            'assets/elgiganten-logo.jpeg',
+            fit: BoxFit.contain,
+            height: 100.0,
+          ),
+        ),
         body: Column(
           children: [
             Expanded(
@@ -115,10 +139,71 @@ class _FinancingState extends State<Financing> {
             ),
           ],
         ),
+        bottomNavigationBar: SizedBox(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              GestureDetector(
+                onTap: () {
+                  // Action for gesture detector
+                  Navigator.pushNamed(context, '/home');
+                },
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: const Icon(Icons.home),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  // Action for gesture detector
+                },
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: Icon(Icons.settings),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  // Action for gesture detector
+                  Navigator.popAndPushNamed(context, '/');
+                  signOut();
+                },
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: const Icon(Icons.logout),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: Image.asset(
+          'assets/elgiganten-logo.jpeg',
+          fit: BoxFit.contain,
+          height: 100.0,
+        ),
+      ),
       body: Column(
         children: [
           Expanded(
@@ -145,7 +230,6 @@ class _FinancingState extends State<Financing> {
                               _userAnswer = allData[_questionIndex]['answers']
                                       [index]
                                   .toString();
-
                               _checkAnswer();
                             });
                           },
@@ -253,6 +337,59 @@ class _FinancingState extends State<Financing> {
                   ),
           ),
         ],
+      ),
+      bottomNavigationBar: Container(
+        height: 60,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            GestureDetector(
+              onTap: () {
+                // Action for gesture detector
+                Navigator.pushNamed(context, '/home');
+              },
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: const Icon(Icons.home),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                // Action for gesture detector
+              },
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: Icon(Icons.bar_chart_rounded),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                // Action for gesture detector
+                Navigator.popAndPushNamed(context, '/');
+                signOut();
+              },
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: const Icon(Icons.logout),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
