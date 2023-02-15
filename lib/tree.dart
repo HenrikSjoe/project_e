@@ -47,8 +47,8 @@ class TreePage extends StatelessWidget {
                 print('tapped Finansiering');
               },
               child: Container(
-                width: 90,
-                height: 17,
+                width: 105,
+                height: 21,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(25),
@@ -75,8 +75,8 @@ class TreePage extends StatelessWidget {
                 print('tapped Trygghet & förlängda garantier');
               },
               child: Container(
-                width: 205,
-                height: 17,
+                width: 255,
+                height: 21,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(25),
@@ -103,8 +103,8 @@ class TreePage extends StatelessWidget {
                 print('tapped Tjänster hemma');
               },
               child: Container(
-                width: 120,
-                height: 20,
+                width: 135,
+                height: 21,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(25),
@@ -132,7 +132,7 @@ class TreePage extends StatelessWidget {
               },
               child: Container(
                 width: 120,
-                height: 20,
+                height: 21,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(25),
@@ -160,7 +160,7 @@ class TreePage extends StatelessWidget {
               },
               child: Container(
                 width: 70,
-                height: 20,
+                height: 21,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(25),
