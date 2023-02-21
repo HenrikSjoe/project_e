@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:core';
-import 'package:collection/collection.dart';
+import 'dart:collection';
 
 class ServicesStore extends StatefulWidget {
   @override
@@ -23,13 +22,15 @@ class _ServicesStoreState extends State<ServicesStore> {
       .doc('BKVP2YeUoX11f5BZbSTZ')
       .collection('questions');
 
+  bool _isSubmitted = false;
   int _questionIndex = 0;
   int _correctAnswers = 0;
   List<Map<String, dynamic>> allData = [];
   bool _isLoading = true;
   String _userAnswer = "";
   TextEditingController _textController = TextEditingController();
-  Color _color = Colors.blue;
+  Color _submitButtonColor = Colors.blue;
+
   List<String> _selectedAnswers = [];
   bool _multiAnswerCheck(
       List<String> selectedAnswers, List<String> correctAnswers) {
@@ -46,7 +47,7 @@ class _ServicesStoreState extends State<ServicesStore> {
   }
 
   Future<void> getData() async {
-    // Get docs from collection reference_userAnswer
+    // Get docs from collection reference
     QuerySnapshot querySnapshot = await _collectionRef.get();
 
     // Get data from docs and convert map to List
@@ -58,7 +59,22 @@ class _ServicesStoreState extends State<ServicesStore> {
     });
   }
 
-  void _checkMultiAnswer() {
+  void _checkSingleAnswer() {
+    _userAnswer = "";
+    _textController.clear();
+    if (allData[_questionIndex]['correctAnswer'].compareTo(_userAnswer) == 0) {
+      setState(() {
+        _correctAnswers++;
+      });
+    }
+    Future.delayed(const Duration(milliseconds: 500), () {
+      setState(() {
+        _questionIndex++;
+      });
+    });
+  }
+
+  void _checkMultipleAnswer() {
     List<String> multiCorrects =
         allData[_questionIndex]['multiCorrects'].cast<String>();
     Set<String> selectedSet = Set.from(_selectedAnswers);
@@ -68,22 +84,18 @@ class _ServicesStoreState extends State<ServicesStore> {
     if (allCorrect) {
       _correctAnswers++;
       setState(() {
-        _color = Colors.green;
+        _submitButtonColor = Colors.green; // set color to green
       });
     } else {
       setState(() {
-        _color = Colors.red;
+        _submitButtonColor = Colors.red; // set color to red
       });
     }
-
     _selectedAnswers.clear();
     Future.delayed(const Duration(milliseconds: 500), () {
       setState(() {
         _questionIndex++;
-        _userAnswer = "";
-        setState(() {
-          _color = Colors.blue;
-        });
+        _submitButtonColor = Colors.blue; // reset color to blue
       });
     });
   }
@@ -91,22 +103,9 @@ class _ServicesStoreState extends State<ServicesStore> {
   void _checkAnswer() {
     if (allData[_questionIndex]['multiAnswer'] == true) {
       if (allData[_questionIndex]['multiCorrect'] == true) {
-        _checkMultiAnswer();
-        return;
+        _checkMultipleAnswer();
       } else {
-        if (_userAnswer.isNotEmpty) {
-          if (allData[_questionIndex]['correctAnswer'].compareTo(_userAnswer) ==
-              0) {
-            _correctAnswers++;
-            setState(() {
-              _color = Colors.green;
-            });
-          } else {
-            setState(() {
-              _color = Colors.red;
-            });
-          }
-        }
+        _checkSingleAnswer();
       }
     } else {
       if (_userAnswer.isNotEmpty) {
@@ -127,96 +126,137 @@ class _ServicesStoreState extends State<ServicesStore> {
         if (keywordMatch >= 0.5 ||
             _userAnswer == allData[_questionIndex]['correctAnswer']) {
           _correctAnswers++;
-          setState(() {
-            _color = Colors.green;
-          });
-        } else {
-          setState(() {
-            _color = Colors.red;
-          });
         }
+        _userAnswer = "";
+        _textController.clear();
+        Future.delayed(const Duration(milliseconds: 500), () {
+          setState(() {
+            _questionIndex++;
+          });
+        });
       }
     }
-
-    _selectedAnswers.clear();
-    _textController.clear();
-    Future.delayed(const Duration(milliseconds: 500), () {
-      setState(() {
-        _questionIndex++;
-        _userAnswer = "";
-        setState(() {
-          _color = Colors.blue;
-        });
-      });
-    });
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildQuestionWidget() {
     if (_questionIndex >= allData.length) {
-      return Scaffold(
-        body: Center(
-          child: Text(
-            "You had $_correctAnswers correct answers out of ${allData.length} questions",
-            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-          ),
+      return Center(
+        child: Text(
+          "You had $_correctAnswers correct answers out of ${allData.length} questions",
+          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
       );
     }
 
     final isMultiAnswer = allData[_questionIndex]['multiAnswer'];
-    return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: Text(
-                allData[_questionIndex]['question'],
-                style: TextStyle(fontSize: 25, fontFamily: 'Elgiganten8'),
+    final isMultiCorrect = allData[_questionIndex]['multiCorrect'];
+    final question = allData[_questionIndex]['question'];
+
+    if (isMultiAnswer) {
+      if (isMultiCorrect) {
+        return _buildMultipleCorrectAnswersQuestion(question);
+      } else {
+        return _buildSingleCorrectAnswerQuestion(question);
+      }
+    } else {
+      return _buildFreeTextQuestion(question);
+    }
+  }
+
+  Widget _buildFreeTextQuestion(String question) {
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+          child: Text(
+            question,
+            style: TextStyle(fontSize: 25, fontFamily: 'Elgiganten8'),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            padding: EdgeInsets.all(20),
+            child: TextField(
+              style: TextStyle(fontSize: 25, fontFamily: 'Elgiganten3'),
+              controller: _textController,
+              onChanged: (value) {
+                setState(() {
+                  _userAnswer = value;
+                });
+              },
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: "Type your answer here",
               ),
             ),
           ),
-          Expanded(
-            child: isMultiAnswer ? _buildMultiAnswer() : _buildTextField(),
+        ),
+        ElevatedButton(
+          child: Text("Submit"),
+          onPressed: _userAnswer.isNotEmpty
+              ? () {
+                  setState(() {
+                    _checkAnswer();
+                    if (_correctAnswers > 0) {
+                      _submitButtonColor = Colors.green;
+                    } else {
+                      _submitButtonColor = Colors.red;
+                    }
+                  });
+                }
+              : null,
+          style: ButtonStyle(
+            backgroundColor:
+                MaterialStateProperty.all<Color>(_submitButtonColor),
           ),
-          if (!isMultiAnswer) Expanded(child: _buildSubmitButton()),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildMultiAnswer() {
-    final isMultiCorrect = allData[_questionIndex]['multiCorrect'] == true;
-    final multiCorrects =
-        allData[_questionIndex]['multiCorrects']?.cast<String>() ?? [];
-    final answers = allData[_questionIndex]['answers'].cast<String>();
+  Widget _buildSingleCorrectAnswerQuestion(String question) {
+    List<String> answers = allData[_questionIndex]['answers'].cast<String>();
 
     return Column(
       children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+          child: Text(
+            question,
+            style: TextStyle(fontSize: 25, fontFamily: 'Elgiganten8'),
+          ),
+        ),
         Expanded(
           child: ListView.builder(
             itemCount: answers.length,
             itemBuilder: (BuildContext context, int index) {
-              final isSelected = _selectedAnswers.contains(answers[index]);
-
+              Color buttonColor = Colors.blue;
+              String userAnswer = answers[index];
+              String correctAnswer = allData[_questionIndex]['correctAnswer'];
+              if (_isSubmitted && _userAnswer == userAnswer) {
+                if (userAnswer == correctAnswer) {
+                  buttonColor = Colors.green;
+                  _correctAnswers++;
+                } else {
+                  buttonColor = Colors.red;
+                }
+              }
               return ElevatedButton(
                 onPressed: () {
-                  setState(() {
-                    if (isMultiCorrect) {
-                      if (isSelected) {
-                        _selectedAnswers.remove(answers[index]);
-                      } else {
-                        _selectedAnswers.add(answers[index]);
-                      }
-                    } else {
-                      _selectedAnswers.clear();
-                      _selectedAnswers.add(answers[index]);
-                    }
-                  });
+                  if (!_isSubmitted) {
+                    setState(() {
+                      _userAnswer = answers[index];
+                      _isSubmitted = true;
+                    });
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      setState(() {
+                        _questionIndex++;
+                        _isSubmitted = false;
+                      });
+                    });
+                  }
                 },
-                style: ElevatedButton.styleFrom(
-                  primary: isSelected ? Colors.blue : Colors.grey[300],
-                ),
+                style: ElevatedButton.styleFrom(primary: buttonColor),
                 child: Text(
                   answers[index],
                   style: TextStyle(fontSize: 18, fontFamily: 'Elgiganten8'),
@@ -225,98 +265,91 @@ class _ServicesStoreState extends State<ServicesStore> {
             },
           ),
         ),
-        if (isMultiCorrect)
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              primary: _color,
-            ),
-            child: Text("Submit"),
-            onPressed: () {
-              if (_multiAnswerCheck(_selectedAnswers, multiCorrects)) {
-                _correctAnswers++;
-                setState(() {
-                  _color = Colors.green;
-                });
-              } else {
-                setState(() {
-                  _color = Colors.red;
-                });
-              }
-              _selectedAnswers.clear();
-              Future.delayed(const Duration(milliseconds: 500), () {
-                setState(() {
-                  _questionIndex++;
-                  _userAnswer = "";
-                  setState(() {
-                    _color = Colors.blue;
-                  });
-                });
-              });
-            },
-          ),
-        if (!isMultiCorrect)
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              primary: _color,
-            ),
-            child: Text("Submit"),
-            onPressed: () {
-              final isAnswerCorrect = allData[_questionIndex]
-                      ['correctAnswer'] ==
-                  _selectedAnswers[0];
-              if (isAnswerCorrect) {
-                _correctAnswers++;
-                setState(() {
-                  _color = Colors.green;
-                });
-              } else {
-                setState(() {
-                  _color = Colors.red;
-                });
-              }
-              _selectedAnswers.clear();
-              _textController.clear();
-              Future.delayed(const Duration(milliseconds: 500), () {
-                setState(() {
-                  _questionIndex++;
-                  _userAnswer = "";
-                  setState(() {
-                    _color = Colors.blue;
-                  });
-                });
-              });
-            },
-          ),
       ],
     );
   }
 
-  Widget _buildTextField() {
-    return Container(
-      child: TextField(
-        style: TextStyle(fontFamily: 'Elgiganten3', fontSize: 25),
-        controller: _textController,
-        onChanged: (value) {
-          setState(() {
-            _userAnswer = value;
-          });
-        },
-      ),
+  Widget _buildMultipleCorrectAnswersQuestion(String question) {
+    List<String> multiCorrects =
+        allData[_questionIndex]['multiCorrects']?.cast<String>() ?? [];
+    List<String> answers = allData[_questionIndex]['answers'].cast<String>();
+    bool correct = false;
+    bool _isSubmitted = false;
+
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+          child: Text(
+            question,
+            style: TextStyle(fontSize: 25, fontFamily: 'Elgiganten8'),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: answers.length,
+            itemBuilder: (BuildContext context, int index) {
+              bool isSelected = _selectedAnswers.contains(answers[index]);
+              return ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    if (isSelected) {
+                      _selectedAnswers.remove(answers[index]);
+                    } else {
+                      _selectedAnswers.add(answers[index]);
+                    }
+                  });
+                },
+                style: isSelected
+                    ? ElevatedButton.styleFrom(primary: Colors.blue)
+                    : ElevatedButton.styleFrom(primary: Colors.grey),
+                child: Text(
+                  answers[index],
+                  style: TextStyle(fontSize: 18, fontFamily: 'Elgiganten8'),
+                ),
+              );
+            },
+          ),
+        ),
+        ElevatedButton(
+          child: Text("Submit"),
+          onPressed: _selectedAnswers.isNotEmpty && !_isSubmitted
+              ? () {
+                  setState(() {
+                    _isSubmitted = true;
+                  });
+                  _checkMultipleAnswer();
+                }
+              : null,
+          style: ButtonStyle(
+            backgroundColor:
+                MaterialStateProperty.all<Color>(_submitButtonColor),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildSubmitButton() {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(backgroundColor: _color),
-      child: Text("Submit"),
-      onPressed: () {
-        setState(() {
-          _color = _userAnswer == allData[_questionIndex]['correctAnswer']
-              ? Colors.green
-              : Colors.red;
-          _checkAnswer();
-        });
-      },
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Services Store"),
+        actions: [
+          TextButton(
+            onPressed: signOut,
+            child: Text(
+              "Logout",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : _buildQuestionWidget(),
     );
   }
 }
