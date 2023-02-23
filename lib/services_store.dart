@@ -30,6 +30,7 @@ class _ServicesStoreState extends State<ServicesStore> {
   String _userAnswer = "";
   TextEditingController _textController = TextEditingController();
   Color _submitButtonColor = Colors.blue;
+  bool _fadeOut = false;
 
   List<String> _selectedAnswers = [];
   bool _multiAnswerCheck(
@@ -102,12 +103,14 @@ class _ServicesStoreState extends State<ServicesStore> {
 
   void _checkAnswer() {
     if (allData[_questionIndex]['multiAnswer'] == true) {
+      // Handle multiple-answer questions
       if (allData[_questionIndex]['multiCorrect'] == true) {
         _checkMultipleAnswer();
       } else {
         _checkSingleAnswer();
       }
     } else {
+      // Handle free-text questions
       if (_userAnswer.isNotEmpty) {
         List<String> keywords =
             (allData[_questionIndex]['keywords'] as List<dynamic>)
@@ -125,14 +128,28 @@ class _ServicesStoreState extends State<ServicesStore> {
 
         if (keywordMatch >= 0.5 ||
             _userAnswer == allData[_questionIndex]['correctAnswer']) {
-          _correctAnswers++;
+          setState(() {
+            _correctAnswers++;
+            _submitButtonColor = Colors.green; // Set color to green
+          });
+        } else {
+          setState(() {
+            _submitButtonColor = Colors.red; // Set color to red
+          });
         }
+
         _userAnswer = "";
         _textController.clear();
         Future.delayed(const Duration(milliseconds: 500), () {
           setState(() {
             _questionIndex++;
+            _submitButtonColor = Colors.blue; // Reset color to blue
           });
+        });
+      } else {
+        setState(() {
+          _submitButtonColor =
+              Colors.red; // Set color to red if the answer is empty
         });
       }
     }
@@ -143,7 +160,8 @@ class _ServicesStoreState extends State<ServicesStore> {
       return Center(
         child: Text(
           "You had $_correctAnswers correct answers out of ${allData.length} questions",
-          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+              fontSize: 25, fontWeight: FontWeight.bold, color: Colors.white),
         ),
       );
     }
@@ -167,44 +185,57 @@ class _ServicesStoreState extends State<ServicesStore> {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
           child: Text(
             question,
-            style: TextStyle(fontSize: 25, fontFamily: 'Elgiganten8'),
+            style: const TextStyle(
+                fontSize: 25, fontFamily: 'Elgiganten8', color: Colors.white),
           ),
         ),
         Expanded(
-          child: Container(
-            padding: EdgeInsets.all(20),
-            child: TextField(
-              style: TextStyle(fontSize: 25, fontFamily: 'Elgiganten3'),
-              controller: _textController,
-              onChanged: (value) {
-                setState(() {
-                  _userAnswer = value;
-                });
-              },
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: "Type your answer here",
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: TextField(
+                controller: _textController,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 25,
+                    fontFamily: 'Elgiganten3'),
+                decoration: const InputDecoration(
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color.fromRGBO(
+                          22, 43, 117, 1.0), // Change the border color to red
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.white,
+                    ),
+                  ),
+                  hintText: "Type your answer here...",
+                  hintStyle: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontFamily: 'Elgiganten3'),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _userAnswer = value;
+                  });
+                },
               ),
             ),
           ),
         ),
         ElevatedButton(
-          child: Text("Submit"),
-          onPressed: _userAnswer.isNotEmpty
-              ? () {
-                  setState(() {
-                    _checkAnswer();
-                    if (_correctAnswers > 0) {
-                      _submitButtonColor = Colors.green;
-                    } else {
-                      _submitButtonColor = Colors.red;
-                    }
-                  });
-                }
-              : null,
+          child: const Text("Submit"),
+          onPressed: () {
+            setState(() {
+              _checkAnswer();
+            });
+          },
           style: ButtonStyle(
             backgroundColor:
                 MaterialStateProperty.all<Color>(_submitButtonColor),
@@ -220,46 +251,58 @@ class _ServicesStoreState extends State<ServicesStore> {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+          padding: const EdgeInsets.fromLTRB(20, 30, 20, 10),
           child: Text(
             question,
-            style: TextStyle(fontSize: 25, fontFamily: 'Elgiganten8'),
+            style: const TextStyle(
+                fontSize: 25, fontFamily: 'Elgiganten8', color: Colors.white),
           ),
         ),
         Expanded(
           child: ListView.builder(
             itemCount: answers.length,
             itemBuilder: (BuildContext context, int index) {
-              Color buttonColor = Colors.blue;
+              Color buttonColor = const Color.fromRGBO(22, 43, 117, 0);
               String userAnswer = answers[index];
               String correctAnswer = allData[_questionIndex]['correctAnswer'];
               if (_isSubmitted && _userAnswer == userAnswer) {
                 if (userAnswer == correctAnswer) {
-                  buttonColor = Colors.green;
+                  buttonColor = const Color.fromRGBO(119, 162, 69, 1.0);
                   _correctAnswers++;
                 } else {
-                  buttonColor = Colors.red;
+                  buttonColor = const Color.fromRGBO(211, 53, 48, 1.0);
                 }
               }
-              return ElevatedButton(
-                onPressed: () {
-                  if (!_isSubmitted) {
-                    setState(() {
-                      _userAnswer = answers[index];
-                      _isSubmitted = true;
-                    });
-                    Future.delayed(const Duration(milliseconds: 500), () {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (!_isSubmitted) {
                       setState(() {
-                        _questionIndex++;
-                        _isSubmitted = false;
+                        _userAnswer = answers[index];
+                        _isSubmitted = true;
                       });
-                    });
-                  }
-                },
-                style: ElevatedButton.styleFrom(primary: buttonColor),
-                child: Text(
-                  answers[index],
-                  style: TextStyle(fontSize: 18, fontFamily: 'Elgiganten8'),
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        setState(() {
+                          _questionIndex++;
+                          _isSubmitted = false;
+                        });
+                      });
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    primary: buttonColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 22.0, horizontal: 50.0),
+                  ),
+                  child: Text(
+                    answers[index],
+                    style: const TextStyle(
+                        fontSize: 18, fontFamily: 'elgiganten3'),
+                  ),
                 ),
               );
             },
@@ -275,44 +318,106 @@ class _ServicesStoreState extends State<ServicesStore> {
     List<String> answers = allData[_questionIndex]['answers'].cast<String>();
     bool correct = false;
     bool _isSubmitted = false;
+    ScrollController _scrollController = ScrollController();
+    bool _showScrollbar = true;
+
+    void _showScrollbarTimer() {
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() {
+            _showScrollbar = false;
+          });
+        }
+      });
+    }
 
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
           child: Text(
             question,
-            style: TextStyle(fontSize: 25, fontFamily: 'Elgiganten8'),
+            style: const TextStyle(
+                fontSize: 25, fontFamily: 'Elgiganten8', color: Colors.white),
           ),
         ),
         Expanded(
-          child: ListView.builder(
-            itemCount: answers.length,
-            itemBuilder: (BuildContext context, int index) {
-              bool isSelected = _selectedAnswers.contains(answers[index]);
-              return ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    if (isSelected) {
-                      _selectedAnswers.remove(answers[index]);
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color.fromRGBO(3, 14, 78, 1.0),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Scrollbar(
+              thumbVisibility: _showScrollbar,
+              controller: _scrollController,
+              child: ListView.builder(
+                controller: _scrollController,
+                itemCount: answers.length,
+                itemBuilder: (BuildContext context, int index) {
+                  Color buttonColor = Colors.blue;
+                  String userAnswer = answers[index];
+                  if (_selectedAnswers.contains(userAnswer)) {
+                    if (multiCorrects.contains(userAnswer)) {
+                      correct = true;
                     } else {
-                      _selectedAnswers.add(answers[index]);
+                      correct = false;
                     }
-                  });
+                  } else {
+                    correct = multiCorrects.contains(userAnswer) ? false : true;
+                  }
+
+                  if (_isSubmitted) {
+                    if (_selectedAnswers.contains(userAnswer)) {
+                      buttonColor = correct ? Colors.green : Colors.red;
+                    } else {
+                      buttonColor = multiCorrects.contains(userAnswer)
+                          ? Colors.green
+                          : Colors.blue;
+                    }
+                  } else {
+                    buttonColor = _selectedAnswers.contains(userAnswer)
+                        ? Colors.blue
+                        : const Color.fromRGBO(3, 10, 54, 1.0);
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 500),
+                      opacity: _fadeOut ? 0.5 : 1.0,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            if (_selectedAnswers.contains(userAnswer)) {
+                              _selectedAnswers.remove(userAnswer);
+                            } else {
+                              _selectedAnswers.add(userAnswer);
+                            }
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          primary: buttonColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 22.0, horizontal: 50.0),
+                        ),
+                        child: Text(
+                          answers[index],
+                          style: const TextStyle(
+                              fontSize: 18, fontFamily: 'Elgiganten8'),
+                        ),
+                      ),
+                    ),
+                  );
                 },
-                style: isSelected
-                    ? ElevatedButton.styleFrom(primary: Colors.blue)
-                    : ElevatedButton.styleFrom(primary: Colors.grey),
-                child: Text(
-                  answers[index],
-                  style: TextStyle(fontSize: 18, fontFamily: 'Elgiganten8'),
-                ),
-              );
-            },
+              ),
+            ),
           ),
         ),
         ElevatedButton(
-          child: Text("Submit"),
+          child: const Text("Submit"),
           onPressed: _selectedAnswers.isNotEmpty && !_isSubmitted
               ? () {
                   setState(() {
@@ -333,23 +438,48 @@ class _ServicesStoreState extends State<ServicesStore> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromRGBO(3, 14, 78, 1.0),
       appBar: AppBar(
-        title: Text("Services Store"),
-        actions: [
-          TextButton(
-            onPressed: signOut,
-            child: Text(
-              "Logout",
-              style: TextStyle(color: Colors.white),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/elgiganten-logo.jpeg',
+              fit: BoxFit.contain,
+              height: 60.0,
             ),
-          ),
-        ],
+            const SizedBox(width: 10),
+          ],
+        ),
       ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : _buildQuestionWidget(),
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: _buildQuestionWidget(),
+                    ),
+                    const SizedBox(height: 30),
+                    LinearProgressIndicator(
+                      value: (_questionIndex + 1) / allData.length,
+                      backgroundColor: Colors.grey[300],
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        Colors.blue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+      ),
     );
   }
 }

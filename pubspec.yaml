@@ -44,6 +44,7 @@ dependencies:
   fuzzywuzzy: ^0.2.0
   string_similarity: ^2.0.0
   dart_levenshtein: ^1.0.1
+  scroll_to_index: ^3.0.1
 
 dev_dependencies:
   flutter_test:
