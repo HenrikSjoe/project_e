@@ -1,7 +1,6 @@
-// ignore_for_file: prefer_const_constructors
-
-import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 Future<void> signOut() async {
   try {
@@ -11,7 +10,176 @@ Future<void> signOut() async {
   }
 }
 
-class TreePage extends StatelessWidget {
+class TreePage extends StatefulWidget {
+  @override
+  _TreePageState createState() => _TreePageState();
+}
+
+class _TreePageState extends State<TreePage> {
+  final _users = FirebaseFirestore.instance.collection('users');
+  final _currentUser = FirebaseAuth.instance.currentUser!;
+  int financingScore = 0;
+  int warrantiesScore = 0;
+  int servicesHomeScore = 0;
+  int servicesStoreScore = 0;
+  int accessoriesScore = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscribeToScores();
+  }
+
+  void _subscribeToScores() {
+    _users
+        .doc(_currentUser.uid)
+        .collection('scores')
+        .snapshots()
+        .listen((snapshot) {
+      snapshot.docChanges.forEach((change) {
+        final score = change.doc.data()!['score'] as int?;
+        switch (change.doc.id) {
+          case 'financing':
+            setState(() {
+              financingScore = score ?? 0;
+            });
+            break;
+          case 'warranties':
+            setState(() {
+              warrantiesScore = score ?? 0;
+            });
+            break;
+          case 'servicesHome':
+            setState(() {
+              servicesHomeScore = score ?? 0;
+            });
+            break;
+          case 'servicesStore':
+            setState(() {
+              servicesStoreScore = score ?? 0;
+            });
+            break;
+          case 'accessories':
+            setState(() {
+              accessoriesScore = score ?? 0;
+            });
+            break;
+        }
+        setState(() {}); // update the UI with the new cumulative score
+      });
+    });
+  }
+
+  void _getScore(String scoreType, void Function(int) onScore) {
+    final scoreRef =
+        _users.doc(_currentUser.uid).collection('scores').doc(scoreType);
+    scoreRef.get().then((scoreDoc) {
+      if (scoreDoc.exists) {
+        final score = scoreDoc.data()?['score'] as int?;
+        onScore(score ?? 0);
+      }
+    }).catchError((error) {
+      print('Error fetching $scoreType score: $error');
+    });
+  }
+
+  int get cumulativeScore {
+    return financingScore +
+        warrantiesScore +
+        servicesHomeScore +
+        servicesStoreScore +
+        accessoriesScore;
+  }
+
+  bool get isWarrantiesEnabled {
+    return cumulativeScore >= 6;
+  }
+
+  bool get isServicesHomeEnabled {
+    return cumulativeScore >= 12;
+  }
+
+  bool get isServicesStoreEnabled {
+    return cumulativeScore >= 16;
+  }
+
+  bool get isAccessoriesEnabled {
+    return cumulativeScore >= 22;
+  }
+
+  Widget _buildButton({
+    required String text,
+    required VoidCallback? onTap,
+    required String scoreType,
+  }) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _users
+          .doc(_currentUser.uid)
+          .collection('scores')
+          .doc(scoreType)
+          .snapshots(),
+      builder:
+          (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+        int currentScore = 0;
+        if (snapshot.hasData && snapshot.data?.exists == true) {
+          currentScore = snapshot.data?.get('score') as int;
+        }
+
+        int requiredScore;
+        switch (scoreType) {
+          case 'financing':
+            requiredScore = 0;
+            break;
+          case 'warranties':
+            requiredScore = 6;
+            break;
+          case 'servicesHome':
+            requiredScore = 12;
+            break;
+          case 'servicesStore':
+            requiredScore = 16;
+            break;
+          case 'accessories':
+            requiredScore = 22;
+            break;
+          default:
+            requiredScore = 0;
+        }
+
+        bool isEnabled = cumulativeScore >= requiredScore;
+
+        return GestureDetector(
+          onTap: isEnabled ? onTap : null,
+          child: Container(
+            width: 150,
+            height: 45,
+            decoration: BoxDecoration(
+              color: isEnabled
+                  ? Colors.white.withOpacity(0.3)
+                  : Colors.transparent,
+              borderRadius: isEnabled ? BorderRadius.circular(25) : null,
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    text,
+                    style: TextStyle(
+                      color: isEnabled ? Colors.black : Colors.transparent,
+                      fontSize: 20,
+                      fontFamily: 'Elgiganten3',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +193,6 @@ class TreePage extends StatelessWidget {
       ),
       body: Stack(
         children: <Widget>[
-          // Background Image
           Container(
             padding: const EdgeInsets.only(left: 20, right: 20),
             child: Image.asset(
@@ -35,147 +202,61 @@ class TreePage extends StatelessWidget {
               height: double.infinity,
             ),
           ),
-          // Transparent
-          //button as Gesture Detector
           Positioned(
             top: 210,
             left: 20,
-            child: GestureDetector(
+            child: _buildButton(
+              text: 'Finansiering',
               onTap: () {
-                // Action for gesture detector
                 Navigator.pushNamed(context, '/financing');
                 print('tapped Finansiering');
               },
-              child: Container(
-                width: 105,
-                height: 21,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: const Center(
-                  child: Text(
-                    "Finansiering",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontFamily: 'Elgiganten3'),
-                  ),
-                ),
-              ),
+              scoreType: 'financing',
             ),
           ),
           Positioned(
             top: 175,
             left: 110,
-            child: GestureDetector(
-              onTap: () {
-                // Action for gesture detector
-                Navigator.pushNamed(context, '/warranties');
-                print('tapped Trygghet & förlängda garantier');
-              },
-              child: Container(
-                width: 255,
-                height: 21,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: const Center(
-                  child: Text(
-                    "Trygghet & förlängda garantier",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontFamily: 'Elgiganten3'),
-                  ),
-                ),
-              ),
-            ),
+            child: _buildButton(
+                text: 'Trygghet & förlängda garantier',
+                onTap: () {
+                  Navigator.pushNamed(context, '/warranties');
+                  print('tapped Trygghet & förlängda garantier');
+                },
+                scoreType: 'warranties'),
           ),
           Positioned(
             top: 300,
             left: 180,
-            child: GestureDetector(
-              onTap: () {
-                // Action for gesture detector
-                Navigator.pushNamed(context, '/servicesHome');
-                print('tapped Tjänster hemma');
-              },
-              child: Container(
-                width: 135,
-                height: 21,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: const Center(
-                  child: Text(
-                    "Tjänster hemma",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontFamily: 'Elgiganten3'),
-                  ),
-                ),
-              ),
-            ),
+            child: _buildButton(
+                text: 'Tjänster hemma',
+                onTap: () {
+                  Navigator.pushNamed(context, '/servicesHome');
+                  print('tapped Tjänster hemma');
+                },
+                scoreType: 'servicesHome'),
           ),
           Positioned(
             top: 325,
             left: 30,
-            child: GestureDetector(
-              onTap: () {
-                // Action for gesture detector
-                Navigator.pushNamed(context, '/servicesStore');
-                print('tapped Tjänster i butik');
-              },
-              child: Container(
-                width: 120,
-                height: 21,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: const Center(
-                  child: Text(
-                    "Tjänster i butik",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontFamily: 'Elgiganten3'),
-                  ),
-                ),
-              ),
-            ),
+            child: _buildButton(
+                text: 'Tjänster i butik',
+                onTap: () {
+                  Navigator.pushNamed(context, '/servicesStore');
+                  print('tapped Tjänster i butik');
+                },
+                scoreType: 'servicesStore'),
           ),
           Positioned(
             top: 250,
-            left: 280,
-            child: GestureDetector(
-              onTap: () {
-                // Action for gesture detector
-                Navigator.pushNamed(context, '/accessories');
-                print('tapped Tillbehör');
-              },
-              child: Container(
-                width: 70,
-                height: 21,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: const Center(
-                  child: Text(
-                    "Tillbehör",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontFamily: 'Elgiganten3'),
-                  ),
-                ),
-              ),
-            ),
+            left: 200,
+            child: _buildButton(
+                text: 'Tillbehör',
+                onTap: () {
+                  Navigator.pushNamed(context, '/accessories');
+                  print('tapped Tillbehör');
+                },
+                scoreType: 'accessories'),
           ),
         ],
       ),
@@ -187,6 +268,8 @@ class TreePage extends StatelessWidget {
             GestureDetector(
               onTap: () {
                 // Action for gesture detector
+                print("financing $financingScore");
+                print('cumulative score = $cumulativeScore');
               },
               child: Container(
                 width: 50,

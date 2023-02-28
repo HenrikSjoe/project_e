@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -8,10 +9,57 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
   late String email;
   late String password;
-  // var userUid = FirebaseAuth.instance.currentUser!.uid;
   late String userUid;
+
+  void _createUser() async {
+    try {
+      final newUser = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+      if (newUser != null) {
+        userUid = FirebaseAuth.instance.currentUser!.uid;
+        print("New user created: $userUid");
+        await _firestore.collection('users').doc(userUid).set({
+          'name': email,
+        });
+        await _firestore
+            .collection('users')
+            .doc(userUid)
+            .collection('scores')
+            .doc('financing')
+            .set({'score': 0});
+        await _firestore
+            .collection('users')
+            .doc(userUid)
+            .collection('scores')
+            .doc('warranties')
+            .set({'score': 0});
+        await _firestore
+            .collection('users')
+            .doc(userUid)
+            .collection('scores')
+            .doc('servicesStore')
+            .set({'score': 0});
+        await _firestore
+            .collection('users')
+            .doc(userUid)
+            .collection('scores')
+            .doc('servicesHome')
+            .set({'score': 0});
+        await _firestore
+            .collection('users')
+            .doc(userUid)
+            .collection('scores')
+            .doc('accessories')
+            .set({'score': 0});
+        Navigator.popAndPushNamed(context, '/home');
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,11 +107,6 @@ class _LoginPageState extends State<LoginPage> {
                   if (user != null) {
                     Navigator.popAndPushNamed(context, '/home');
                     print("UID: $userUid");
-                    // if (userUid != null) {
-                    //   print(userUid);
-                    // } else {
-                    //   print('No user');
-                    // }
                   }
                 } catch (e) {
                   print('$e UID: $userUid');
@@ -71,6 +114,14 @@ class _LoginPageState extends State<LoginPage> {
               },
               child: Text(
                 'Login',
+                style: TextStyle(fontSize: 20, fontFamily: 'Elgiganten3'),
+              ),
+            ),
+            SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _createUser,
+              child: Text(
+                'Create User',
                 style: TextStyle(fontSize: 20, fontFamily: 'Elgiganten3'),
               ),
             ),

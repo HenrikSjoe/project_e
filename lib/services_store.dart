@@ -2,18 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:collection';
+import 'package:firebase_core/firebase_core.dart';
 
 class ServicesStore extends StatefulWidget {
   @override
   _ServicesStoreState createState() => _ServicesStoreState();
-}
-
-Future<void> signOut() async {
-  try {
-    await FirebaseAuth.instance.signOut();
-  } catch (e) {
-    print(e.toString());
-  }
 }
 
 class _ServicesStoreState extends State<ServicesStore> {
@@ -101,7 +94,7 @@ class _ServicesStoreState extends State<ServicesStore> {
     });
   }
 
-  void _checkAnswer() {
+  void _checkAnswer() async {
     if (allData[_questionIndex]['multiAnswer'] == true) {
       // Handle multiple-answer questions
       if (allData[_questionIndex]['multiCorrect'] == true) {
@@ -140,11 +133,20 @@ class _ServicesStoreState extends State<ServicesStore> {
 
         _userAnswer = "";
         _textController.clear();
-        Future.delayed(const Duration(milliseconds: 500), () {
+        Future.delayed(const Duration(milliseconds: 500), () async {
           setState(() {
             _questionIndex++;
             _submitButtonColor = Colors.blue; // Reset color to blue
           });
+          if (_questionIndex >= allData.length) {
+            final user = FirebaseAuth.instance.currentUser;
+            final scoreRef = FirebaseFirestore.instance
+                .collection('users')
+                .doc(user!.uid)
+                .collection('scores')
+                .doc('servicesHome');
+            await scoreRef.set({'score': _correctAnswers});
+          }
         });
       } else {
         setState(() {
@@ -155,14 +157,34 @@ class _ServicesStoreState extends State<ServicesStore> {
     }
   }
 
+  Future<void> _writeScoreToFirebase() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final scoreRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .collection('scores')
+        .doc('servicesStore');
+    await scoreRef.set({'score': _correctAnswers});
+  }
+
   Widget _buildQuestionWidget() {
     if (_questionIndex >= allData.length) {
-      return Center(
-        child: Text(
-          "You had $_correctAnswers correct answers out of ${allData.length} questions",
-          style: const TextStyle(
-              fontSize: 25, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
+      // All questions have been answered, so write score to Firebase
+      _writeScoreToFirebase();
+
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Center(
+            child: Text(
+              "You had $_correctAnswers correct answers out of ${allData.length} questions",
+              style: const TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+          ),
+        ],
       );
     }
 
@@ -247,6 +269,11 @@ class _ServicesStoreState extends State<ServicesStore> {
 
   Widget _buildSingleCorrectAnswerQuestion(String question) {
     List<String> answers = allData[_questionIndex]['answers'].cast<String>();
+    int maxLength = answers.fold(
+        0, (prev, curr) => curr.length > prev ? curr.length : prev);
+    bool allOneWord = answers.every((answer) => answer.split(' ').length == 1);
+    bool allOneChar = answers.every((answer) => answer.length == 1);
+    bool centerText = allOneWord || allOneChar;
 
     return Column(
       children: [
@@ -298,10 +325,23 @@ class _ServicesStoreState extends State<ServicesStore> {
                     padding: const EdgeInsets.symmetric(
                         vertical: 22.0, horizontal: 50.0),
                   ),
-                  child: Text(
-                    answers[index],
-                    style: const TextStyle(
-                        fontSize: 18, fontFamily: 'elgiganten3'),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 16.0),
+                      child: Align(
+                        alignment: centerText
+                            ? Alignment.center
+                            : Alignment.centerLeft,
+                        child: Text(
+                          answers[index],
+                          style: const TextStyle(
+                              fontSize: 18, fontFamily: 'elgiganten3'),
+                          textAlign:
+                              centerText ? TextAlign.center : TextAlign.left,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               );
@@ -331,6 +371,11 @@ class _ServicesStoreState extends State<ServicesStore> {
       });
     }
 
+    bool allAnswersOneWord =
+        answers.every((answer) => answer.split(' ').length == 1);
+    bool anyAnswerOneChar = answers.any((answer) => answer.length == 1);
+    bool centerText = allAnswersOneWord || anyAnswerOneChar;
+
     return Column(
       children: [
         Padding(
@@ -344,7 +389,7 @@ class _ServicesStoreState extends State<ServicesStore> {
         Expanded(
           child: Container(
             decoration: BoxDecoration(
-              color: const Color.fromRGBO(3, 14, 78, 1.0),
+              color: const Color.fromRGBO(0, 14, 82, 1.0),
               borderRadius: BorderRadius.circular(10.0),
             ),
             child: Scrollbar(
@@ -403,10 +448,21 @@ class _ServicesStoreState extends State<ServicesStore> {
                           padding: const EdgeInsets.symmetric(
                               vertical: 22.0, horizontal: 50.0),
                         ),
-                        child: Text(
-                          answers[index],
-                          style: const TextStyle(
-                              fontSize: 18, fontFamily: 'Elgiganten8'),
+                        child: Align(
+                          alignment: allAnswersOneWord || anyAnswerOneChar
+                              ? Alignment.center
+                              : Alignment.centerLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 16.0),
+                            child: Text(
+                              answers[index],
+                              style: const TextStyle(
+                                  fontSize: 18, fontFamily: 'Elgiganten8'),
+                              textAlign: centerText
+                                  ? TextAlign.center
+                                  : TextAlign.left,
+                            ),
+                          ),
                         ),
                       ),
                     ),
