@@ -504,9 +504,9 @@ class _FinancingState extends State<Financing> {
             Image.asset(
               'assets/elgiganten-logo.jpeg',
               fit: BoxFit.contain,
-              height: 60.0,
+              height: 100.0,
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 50),
           ],
         ),
       ),
