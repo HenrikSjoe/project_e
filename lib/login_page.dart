@@ -18,6 +18,12 @@ class _LoginPageState extends State<LoginPage> {
   late String firstName;
   late String surname;
 
+  Future<DocumentSnapshot> fetchUserData(String userUid) async {
+  return await FirebaseFirestore.instance.collection('users').doc(userUid).get();
+}
+
+  
+
   void _createUser() async {
     setState(() {
       showNameFields = true;
@@ -271,3 +277,5 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+
+

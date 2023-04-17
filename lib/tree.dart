@@ -196,12 +196,31 @@ class _TreePageState extends State<TreePage> {
           Container(
             padding: const EdgeInsets.only(left: 20, right: 20),
             child: Image.asset(
-              "assets/tree.jpeg",
-              fit: BoxFit.cover,
-              width: double.infinity,
+              "assets/tradet.png",
+              fit: BoxFit.fill,
+              // width: double.infinity,
+              // height: double.infinity,
+              // alignment: Alignment.center,
               height: double.infinity,
+              width: 600,
             ),
           ),
+    //        Positioned(
+    //   top: 20,
+    //   left: 20,
+    //   child: Text(
+    //     _currentUser.displayName ?? _currentUser.email ?? '',
+    //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    //   ),
+    // ),
+    Positioned(
+      top: 40,
+      left: 20,
+      child: Text(
+        'Total Score: $cumulativeScore',
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, fontFamily: 'Elgiganten2', color: Color.fromRGBO(18, 21, 88, 1.0)),
+      ),
+    ),
           Positioned(
             top: 210,
             left: 20,
@@ -215,8 +234,8 @@ class _TreePageState extends State<TreePage> {
             ),
           ),
           Positioned(
-            top: 175,
-            left: 110,
+            top: 105,
+            left: 115,
             child: _buildButton(
                 text: 'Trygghet & förlängda garantier',
                 onTap: () {
@@ -227,7 +246,7 @@ class _TreePageState extends State<TreePage> {
           ),
           Positioned(
             top: 300,
-            left: 180,
+            left: 230,
             child: _buildButton(
                 text: 'Tjänster hemma',
                 onTap: () {
@@ -237,8 +256,8 @@ class _TreePageState extends State<TreePage> {
                 scoreType: 'servicesHome'),
           ),
           Positioned(
-            top: 325,
-            left: 30,
+            top: 315,
+            left: -15,
             child: _buildButton(
                 text: 'Tjänster i butik',
                 onTap: () {
@@ -248,8 +267,8 @@ class _TreePageState extends State<TreePage> {
                 scoreType: 'servicesStore'),
           ),
           Positioned(
-            top: 250,
-            left: 200,
+            top: 180,
+            left: 250,
             child: _buildButton(
                 text: 'Tillbehör',
                 onTap: () {
@@ -297,6 +316,7 @@ class _TreePageState extends State<TreePage> {
             ),
             GestureDetector(
               onTap: () {
+                print(cumulativeScore);
                 // Action for gesture detector
                 Navigator.popAndPushNamed(context, '/');
                 signOut();

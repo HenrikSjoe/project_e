@@ -172,20 +172,21 @@ class _ServicesStoreState extends State<ServicesStore> {
       // All questions have been answered, so write score to Firebase
       _writeScoreToFirebase();
 
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Center(
-            child: Text(
-              "You had $_correctAnswers correct answers out of ${allData.length} questions",
-              style: const TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
-            ),
-          ),
-        ],
-      );
+      return _buildResultScreen();
+      // Column(
+      //   mainAxisAlignment: MainAxisAlignment.center,
+      //   children: [
+      //     Center(
+      //       child: Text(
+      //         "You had $_correctAnswers correct answers out of ${allData.length} questions",
+      //         style: const TextStyle(
+      //             fontSize: 25,
+      //             fontWeight: FontWeight.bold,
+      //             color: Colors.white),
+      //       ),
+      //     ),
+      //   ],
+      // );
     }
 
     final isMultiAnswer = allData[_questionIndex]['multiAnswer'];
@@ -490,6 +491,73 @@ class _ServicesStoreState extends State<ServicesStore> {
       ],
     );
   }
+
+  Widget _buildResultScreen() {
+  String resultText;
+  Color resultColor;
+
+  if (_correctAnswers == allData.length) {
+    resultText = "Congrats! You've unlocked the next category!";
+    resultColor = Color.fromRGBO(123, 179, 55, 1); // Green color
+  } else {
+    resultText =
+        "You need to answer all questions correctly to unlock the next category. Try again.";
+    resultColor = Color.fromRGBO(241, 46, 39, 1); // Red color
+  }
+
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Spacer(),
+      Center(
+        child: Text(
+          "You had $_correctAnswers correct answers out of ${allData.length} questions",
+          style: const TextStyle(
+              fontSize: 35,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontFamily: "Elgiganten4"),
+          textAlign: TextAlign.center,
+        ),
+      ),
+      SizedBox(height: 10),
+      Center(
+        child: Text(
+          resultText,
+          style: TextStyle(
+              fontSize: 35,
+              fontWeight: FontWeight.bold,
+              color: resultColor,
+              fontFamily: "Elgiganten4"),
+          textAlign: TextAlign.center,
+        ),
+      ),
+      Spacer(),
+      ElevatedButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/home');
+        },
+        style: ElevatedButton.styleFrom(
+          primary: Colors.blue,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+        ),
+        child: Text(
+          'Go back to Tree',
+          style: TextStyle(
+              fontSize: 25,
+              fontFamily: 'Elgiganten7',
+              color: Colors.white),
+        ),
+      ),
+    ],
+  );
+}
+
+
+
 
   @override
   Widget build(BuildContext context) {
