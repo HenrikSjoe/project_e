@@ -97,6 +97,12 @@ class _LoginPageState extends State<LoginPage> {
             .collection('scores')
             .doc('accessories')
             .set({'score': 0});
+            await _firestore
+            .collection('users')
+            .doc(userUid)
+            .collection('scores')
+            .doc('weekly')
+            .set({'score': 0});
         Navigator.popAndPushNamed(context, '/home');
       }
     } catch (e) {

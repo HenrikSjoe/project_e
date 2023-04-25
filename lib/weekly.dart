@@ -6,15 +6,15 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'tree.dart';
 
-class AccessoriesPage extends StatefulWidget {
+class WeeklyPage extends StatefulWidget {
   @override
-  _AccessoriesPageState createState() => _AccessoriesPageState();
+  _WeeklyPageState createState() => _WeeklyPageState();
 }
 
-class _AccessoriesPageState extends State<AccessoriesPage> {
+class _WeeklyPageState extends State<WeeklyPage> {
   CollectionReference _collectionRef = FirebaseFirestore.instance
       .collection('categories')
-      .doc('Iv94FyH12BzjKhnAN8qP')
+      .doc('OyFEmX3f9LgB9ZrTUe9p')
       .collection('questions');
 
   bool _isSubmitted = false;
@@ -146,7 +146,7 @@ class _AccessoriesPageState extends State<AccessoriesPage> {
                 .collection('users')
                 .doc(user!.uid)
                 .collection('scores')
-                .doc('accessories');
+                .doc('weekly');
             await scoreRef.set({'score': _correctAnswers});
           }
         });
@@ -165,7 +165,7 @@ class _AccessoriesPageState extends State<AccessoriesPage> {
         .collection('users')
         .doc(user!.uid)
         .collection('scores')
-        .doc('accessories');
+        .doc('weekly');
     await scoreRef.set({'score': _correctAnswers});
   }
 
@@ -179,11 +179,11 @@ class _AccessoriesPageState extends State<AccessoriesPage> {
   Color resultColor;
 
   if (_correctAnswers == allData.length) {
-    resultText = "Snyggt, du har klarat alla frågor och kategorier som finns för närvarande";
+    resultText = "Snyggt! Fortsätt så och kom ihåg highscorelistan.";
     resultColor = Color.fromRGBO(123, 179, 55, 1); // Green color
   } else {
     resultText =
-        "Du behöver ha alla rätt. Försök igen.";
+        "Du kan fortfarande komma bra till på topplistan över året(?)";
     resultColor = Color.fromRGBO(241, 46, 39, 1); // Red color
   }
 
@@ -223,8 +223,6 @@ class _AccessoriesPageState extends State<AccessoriesPage> {
   MaterialPageRoute(builder: (BuildContext context) => TreePage()), // TreePage() is the widget for your '/home' route
   (Route<dynamic> route) => route.settings.name == '/home',
 );
-
-
 
         },
         style: ElevatedButton.styleFrom(

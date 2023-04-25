@@ -1,6 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:project_e/accessories.dart';
+import 'package:project_e/financing.dart';
+import 'package:project_e/services_home.dart';
+import 'package:project_e/services_store.dart';
+import 'package:project_e/warranties.dart';
+
 
 Future<void> signOut() async {
   try {
@@ -227,7 +234,13 @@ class _TreePageState extends State<TreePage> {
             child: _buildButton(
               text: 'Finansiering',
               onTap: () {
-                Navigator.pushNamed(context, '/financing');
+                // Navigator.pushNamed(context, '/financing');
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (BuildContext context) => Financing()), // TreePage() is the widget for your '/home' route
+                  (Route<dynamic> route) => route.settings.name == '/financing',
+                );
+
                 print('tapped Finansiering');
               },
               scoreType: 'financing',
@@ -239,7 +252,13 @@ class _TreePageState extends State<TreePage> {
             child: _buildButton(
                 text: 'Trygghet & förlängda garantier',
                 onTap: () {
-                  Navigator.pushNamed(context, '/warranties');
+                  // Navigator.pushNamed(context, '/warranties');
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (BuildContext context) => Warranties()), // TreePage() is the widget for your '/home' route
+                    (Route<dynamic> route) => route.settings.name == '/warranties',
+                  );
+
                   print('tapped Trygghet & förlängda garantier');
                 },
                 scoreType: 'warranties'),
@@ -250,7 +269,13 @@ class _TreePageState extends State<TreePage> {
             child: _buildButton(
                 text: 'Tjänster hemma',
                 onTap: () {
-                  Navigator.pushNamed(context, '/servicesHome');
+                  // Navigator.pushNamed(context, '/servicesHome');
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (BuildContext context) => ServicesHome()), // TreePage() is the widget for your '/home' route
+                    (Route<dynamic> route) => route.settings.name == '/servicesHome',
+                  );
+
                   print('tapped Tjänster hemma');
                 },
                 scoreType: 'servicesHome'),
@@ -261,7 +286,13 @@ class _TreePageState extends State<TreePage> {
             child: _buildButton(
                 text: 'Tjänster i butik',
                 onTap: () {
-                  Navigator.pushNamed(context, '/servicesStore');
+                  // Navigator.pushNamed(context, '/servicesStore');
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (BuildContext context) => ServicesStore()), // TreePage() is the widget for your '/home' route
+                    (Route<dynamic> route) => route.settings.name == '/servicesStore',
+                  );
+
                   print('tapped Tjänster i butik');
                 },
                 scoreType: 'servicesStore'),
@@ -272,7 +303,13 @@ class _TreePageState extends State<TreePage> {
             child: _buildButton(
                 text: 'Tillbehör',
                 onTap: () {
-                  Navigator.pushNamed(context, '/accessories');
+                  // Navigator.pushNamed(context, '/accessories');
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (BuildContext context) => AccessoriesPage()), // TreePage() is the widget for your '/home' route
+                    (Route<dynamic> route) => route.settings.name == '/accessories',
+                  );
+
                   print('tapped Tillbehör');
                 },
                 scoreType: 'accessories'),
@@ -297,12 +334,13 @@ class _TreePageState extends State<TreePage> {
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(25),
                 ),
-                child: const Icon(Icons.home),
+                child: const FaIcon(FontAwesomeIcons.solidStar),
               ),
             ),
             GestureDetector(
               onTap: () {
                 // Action for gesture detector
+                Navigator.popAndPushNamed(context, '/weekly');
               },
               child: Container(
                 width: 50,
@@ -311,7 +349,7 @@ class _TreePageState extends State<TreePage> {
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(25),
                 ),
-                child: Icon(Icons.settings),
+                child: FaIcon(FontAwesomeIcons.solidCalendarCheck),
               ),
             ),
             GestureDetector(
@@ -328,7 +366,7 @@ class _TreePageState extends State<TreePage> {
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(25),
                 ),
-                child: const Icon(Icons.logout),
+                child: const FaIcon(FontAwesomeIcons.signOutAlt),
               ),
             ),
           ],

@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:collection';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'tree.dart';
+
 class ServicesHome extends StatefulWidget {
   @override
   _ServicesHomeState createState() => _ServicesHomeState();
@@ -178,11 +180,11 @@ class _ServicesHomeState extends State<ServicesHome> {
   Color resultColor;
 
   if (_correctAnswers == allData.length) {
-    resultText = "Congrats! You've unlocked the next category!";
+    resultText = "Snyggt! Du har låst upp nästa kategori.";
     resultColor = Color.fromRGBO(123, 179, 55, 1); // Green color
   } else {
     resultText =
-        "You need to answer all questions correctly to unlock the next category. Try again.";
+        "Du behöver ha alla rätt för att låsa upp nästa kategori. Försök igen.";
     resultColor = Color.fromRGBO(241, 46, 39, 1); // Red color
   }
 
@@ -192,7 +194,7 @@ class _ServicesHomeState extends State<ServicesHome> {
       Spacer(),
       Center(
         child: Text(
-          "You had $_correctAnswers correct answers out of ${allData.length} questions",
+          "Du hade $_correctAnswers rätt av ${allData.length} möjliga.",
           style: const TextStyle(
               fontSize: 35,
               fontWeight: FontWeight.bold,
@@ -216,7 +218,13 @@ class _ServicesHomeState extends State<ServicesHome> {
       Spacer(),
       ElevatedButton(
         onPressed: () {
-          Navigator.pushNamed(context, '/home');
+          // Navigator.pushNamed(context, '/home');
+          Navigator.pushAndRemoveUntil(
+  context,
+  MaterialPageRoute(builder: (BuildContext context) => TreePage()), // TreePage() is the widget for your '/home' route
+  (Route<dynamic> route) => route.settings.name == '/home',
+);
+
         },
         style: ElevatedButton.styleFrom(
           primary: Color.fromRGBO(3, 10, 54, 1),
@@ -226,11 +234,11 @@ class _ServicesHomeState extends State<ServicesHome> {
           padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
         ),
         child: Text(
-          'Go back to Tree',
+          'Tillbaka till trädet',
           style: TextStyle(
               fontSize: 25,
               fontFamily: 'Elgiganten7',
-              color: Colors.blue),
+              color: Colors.white),
         ),
       ),
     ],
@@ -312,11 +320,21 @@ class _ServicesHomeState extends State<ServicesHome> {
             setState(() {
               _checkAnswer();
             });
-          },
-          style: ButtonStyle(
-            backgroundColor:
-                MaterialStateProperty.all<Color>(_submitButtonColor),
-          ),
+          },style: ButtonStyle(
+  backgroundColor: MaterialStateProperty.all<Color>(_submitButtonColor),
+  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+    RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20.0),
+    ),
+  ),
+  padding: MaterialStateProperty.all<EdgeInsets>(
+    EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+  ),
+),
+          // style: ButtonStyle(
+          //   backgroundColor:
+          //       MaterialStateProperty.all<Color>(_submitButtonColor),
+          // ),
         ),
       ],
     );
@@ -537,10 +555,21 @@ class _ServicesHomeState extends State<ServicesHome> {
                   _checkMultipleAnswer();
                 }
               : null,
-          style: ButtonStyle(
-            backgroundColor:
-                MaterialStateProperty.all<Color>(_submitButtonColor),
-          ),
+              style: ButtonStyle(
+  backgroundColor: MaterialStateProperty.all<Color>(_submitButtonColor),
+  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+    RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20.0),
+    ),
+  ),
+  padding: MaterialStateProperty.all<EdgeInsets>(
+    EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+  ),
+),
+          // style: ButtonStyle(
+          //   backgroundColor:
+          //       MaterialStateProperty.all<Color>(_submitButtonColor),
+          // ),
         ),
       ],
     );
